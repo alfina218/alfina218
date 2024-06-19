@@ -1,0 +1,80 @@
+library(fma)
+library(readxl)
+library(tseries)
+data= read_excel("C:/Users/Asus/Downloads/Data Mobil.xlsx")
+data
+View(data)
+
+#soal 5
+plot(data,type="o",pch=16,cex=.5,xlab='tanggal',ylab='Jumlah')
+acf(data$`Jumlah Mobil`,lag.max = 25,type="correlation",main="ACF")
+acf(data$`Jumlah Mobil`,lag.max = 25,type="partial",main="PACF")
+adf.test(data$`Jumlah Mobil`)
+
+diff_data=diff(data$`Jumlah Mobil`)
+plot(diff_data,type="o",pch=16,cex=.5,xlab="tanggal",ylab="jumlah")
+acf(diff_data,lag.max = 25,type="correlation",main="ACF")
+acf(diff_data,lag.max = 25,type="partial",main="PACF")
+adf.test(diff_data)
+
+diff_data2=diff(diff_data)
+plot(diff_data2,type="o",pch=16,cex=.5,xlab="tanggal",ylab="jumlah")
+acf(diff_data2,lag.max = 25,type="correlation",main="ACF")
+acf(diff_data2,lag.max = 25,type="partial",main="PACF")
+adf.test(diff_data2)
+
+model1=arima(data$`Jumlah Mobil`, order=c(1, 2, 0))
+model2=arima(data$`Jumlah Mobil`, order=c(1, 2, 1))
+model3=arima(data$`Jumlah Mobil`, order=c(2, 2, 0))
+model4=arima(data$`Jumlah Mobil`, order=c(2, 2, 1))
+model1
+model2
+model3
+model4
+soal5=c("Model 1", "Model 2", "Model 3", "Model 4")
+aic=c(model1$aic, model2$aic, model3$aic, model4$aic )
+hasil = data.frame(model, aic)
+hasil
+
+#soal 1
+Model=arima(data$`Jumlah Mobil`, order=c(0, 0, 1))
+Model
+
+#soal 2
+Model1=arima(data$`Jumlah Mobil`, order=c(1, 0, 0))
+Model1
+
+#soal 3
+Model2=arima(data$`Jumlah Mobil`, order=c(1, 0, 1))
+Model2
+
+#soal 4 
+#dari data kelompok menampilkan dari plot acf dan pacf tidak stasioner MAKA MELAKUKAN pengujian adf.test 
+
+#soal 6
+model=c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5")
+AIC=c(Model$aic, Model1$aic, Model2$aic, model2$aic, model4$aic )
+Tabel = data.frame(model, AIC)
+Tabel
+
+#plot data
+plot(data,type="o",pch=16,cex=.5,xlab="tanggal",ylab="jumlah")
+library(forecast)
+library(lmtest)
+#plot fitted data
+fitmodel = as.vector(fitted(model2))
+#plotfit
+tanggal=c(1:39)
+plot(x=tanggal, y=data$`Jumlah Mobil`, type="p",pch=16,cex=.5, xlab="tanggal",ylab="jumlah mobil", col="black", lwd=1)
+lines.default(x=tanggal, y=fitmodel, col="red", type="l", pch=16, cex=.5, lwd=2)
+legend(2, 490,legend=expression(y(t),hat(y)(t)), col = c("black", "red"), pch=c(16, NA),lwd=1:2,cex=.55)
+
+#plotFORCAST
+hasilperamalan=as.array(forecast(model2,h=12))
+hasilperamalan
+
+plot(data$`Jumlah Mobil`, type="o", pch=16, cex=.5, xlab="tanggal", ylab="jumlah mobil", xaxt='n', xlim=c(1,65), ylim=c(130,500))
+lines(40:51, hasilperamalan$mean, col="grey70")
+lines(40:51, hasilperamalan$lower[,2], col="black")
+lines(40:51, hasilperamalan$upper[,2], col="black")
+legend(45, 395, c("y", "Forecast", "95% LPL", "95% UPL"), pch=c(16, NA, NA, NA), lwd=c(NA, .5,.5,.5), cex=.55, col = c("black", "grey68", "black", "black"))
